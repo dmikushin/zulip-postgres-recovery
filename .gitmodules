@@ -1,0 +1,3 @@
+[submodule "ThirdParty/postgres-tolerant"]
+	path = ThirdParty/postgres-tolerant
+	url = git@github.com:dmikushin/postgres-tolerant.git
