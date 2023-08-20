@@ -47,6 +47,8 @@ if __name__ == "__main__":
 	print(f'Launching postgres src and dst on ports {port_src} and {port_dst}...')
 	cmd_src = f'ThirdParty/postgres-tolerant/install/bin/postgres -p {port_src} -O -P -D data_src/data/ -c log_error_verbosity=verbose'
 	cmd_dst = f'ThirdParty/postgres-tolerant/install/bin/postgres -p {port_dst} -O -P -D data_dst/data/ -c log_error_verbosity=verbose'
+	print(cmd_src)
+	print(cmd_dst)
 	
 	# The os.setsid() is passed in the argument preexec_fn so
 	# it's run after the fork() and before  exec() to run the shell.
@@ -146,7 +148,7 @@ if __name__ == "__main__":
 			"zerver_userstatus",
 			"zerver_usertopic"]
 
-		tables = [ "zerver_recipient", "zerver_userprofile", "zerver_message" ]
+		tables = [ "zerver_recipient", "zerver_userprofile", "zerver_stream", "fts_update_log", "zerver_message", "zerver_submessage", "zerver_usermessage", "zerver_userstatus", "zerver_usertopic", "zerver_reaction", "zerver_attachment", "zerver_attachment_messages" ]
 
 		filename = "zulip.sql"
 		filename1 = "zulip.sql.1"
@@ -159,7 +161,7 @@ if __name__ == "__main__":
 			cmd = f'ThirdParty/postgres-tolerant/install/bin/pg_dump -p {port_src} --column-inserts --data-only --table={table} -U zulip zulip >{filename1}'
 			#print(cmd)
 			if os.system(cmd) != 0:
-				raise Exception(f'Cannot dump table {table} from the database, aborting')
+				raise Exception(f'Cannot dump table {table} from the source database, aborting')
 
 			file1 = open(filename1, 'r')
 			file = open(filename, 'w')
@@ -181,8 +183,12 @@ if __name__ == "__main__":
 			file1.close()
 			file.close()
 
-			# TODO Import to destination database
-	except e:
+			# Import to destination database
+			cmd = f'ThirdParty/postgres-tolerant/install/bin/psql -p {port_dst} -U zulip -d zulip --file {filename}'
+			#print(cmd)
+			if os.system(cmd) != 0:
+				raise Exception(f'Cannot insert table {table} rows to the dest database, aborting')
+	except Exception as e:
 		raise e
 	finally:
 		# Stop databases (send the signal to all the process groups)
