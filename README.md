@@ -22,7 +22,9 @@ Perform recovery by running the Python script:
 ./zulip-postgres-recovery.py
 ```
 
-## Troublesooting
+The recovery will build a special [error-tolerant version of PostgreSQL](https://github.com/dmikushin/postgres-tolerant) and use it for data dumping.
+
+## Troubleshooting
 
 1. `fts_update_log relation does not exist`
 
